@@ -9,7 +9,7 @@ export default function Home() {
           🚨 Flood &amp; Disaster Emergency Platform
         </span>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
-          Help Sri Lanka <span className="text-red-500">Recover</span>
+          Help Sri Lanka <span className="text-red-600">Recover</span>
         </h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-8">
           A real-time disaster relief coordination platform connecting those who need
@@ -18,7 +18,7 @@ export default function Home() {
         <div className="flex flex-wrap justify-center gap-4">
           <Link
             to="/request-aid"
-            className="bg-red-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-red-700 transition-colors shadow"
+            className="bg-red-700 text-white font-semibold px-6 py-3 rounded-xl hover:bg-red-800 transition-colors shadow"
           >
             🆘 Request Aid
           </Link>
@@ -34,7 +34,7 @@ export default function Home() {
       {/* Quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
-          { label: 'Aid Requests', value: '—', icon: '📋' },
+          { label: 'Aid Requests',      value: '—', icon: '📋' },
           { label: 'Donations Pledged', value: '—', icon: '💰' },
           { label: 'Volunteers Active', value: '—', icon: '🤝' },
         ].map(({ label, value, icon }) => (
