@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getSupabase } from '../components/safeSupabase'
 import MobileTabBar from '../components/MobileTabBar'
+import heroWide from '../assets/hero-help-srilanka.jpg'
+import heroNarrow from '../assets/hero-help-srilanka-768.jpg'
 
 /* ────────────────────────────────────────────────────────────────
    Static content
@@ -58,9 +60,15 @@ const COMMITMENTS = [
 
 const HOTLINE_CARDS = [
   { label: 'Disaster Mgt Centre', number: '117', accent: 'text-[#B91C1C]' },
-  { label: 'Police Emergency', number: '119', accent: 'text-[#111827]' },
-  { label: 'Fire & Rescue', number: '110', accent: 'text-[#111827]' },
-  { label: 'Suwaseriya Ambulance', number: '1990', accent: 'text-[#111827]' },
+  { label: 'Gov Emergency Ops', number: '1919', accent: 'text-[#111827]' },
+]
+
+// Kept alongside the two headline numbers — never drop a working
+// emergency line just because the mockup only had room for two.
+const HOTLINE_CHIPS = [
+  { label: 'Police', number: '119' },
+  { label: 'Fire & Rescue', number: '110' },
+  { label: 'Ambulance', number: '1990' },
 ]
 
 /* ────────────────────────────────────────────────────────────────
@@ -162,43 +170,20 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-4">
 
         {/* ── Hero ───────────────────────────────────────────── */}
-        <section className="relative overflow-hidden rounded-2xl bg-[#1C1917] text-white">
-          {/* Depth: flood-line texture + vignette, no external assets needed */}
-          <svg
-            className="absolute inset-0 w-full h-full opacity-[0.16]"
-            preserveAspectRatio="none"
-            viewBox="0 0 400 300"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="hero-wash" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#B91C1C" />
-                <stop offset="55%" stopColor="#1C1917" />
-                <stop offset="100%" stopColor="#C2410C" />
-              </linearGradient>
-            </defs>
-            <rect width="400" height="300" fill="url(#hero-wash)" />
-            {Array.from({ length: 14 }, (_, i) => (
-              <path
-                key={i}
-                d={`M0 ${18 * i + 10} Q 100 ${18 * i}, 200 ${18 * i + 10} T 400 ${18 * i + 10}`}
-                stroke="#FFFFFF"
-                strokeWidth="0.6"
-                fill="none"
-              />
-            ))}
-          </svg>
-
-          <div className="relative px-6 py-16 sm:py-24 lg:py-28 text-center">
-            <h1 className="font-serif font-black tracking-tight leading-[0.9] text-5xl sm:text-7xl lg:text-8xl drop-shadow-[0_3px_10px_rgba(0,0,0,0.5)]">
-              <span className="block text-white">HELP</span>
-              <span className="block text-[#FFC400]">SRI LANKA</span>
-            </h1>
-            <p className="mt-5 mx-auto max-w-xl text-sm sm:text-base text-white/80">
-              A tamper-evident dispatch network linking marooned families, volunteer
-              flotillas, and diaspora donors — in real time.
-            </p>
-          </div>
+        <section className="overflow-hidden rounded-2xl bg-[#1C1917]">
+          {/* The HELP SRI LANKA wordmark is burnt into the artwork, so the
+              accessible heading is provided separately for screen readers. */}
+          <h1 className="sr-only">Help Sri Lanka — flood and disaster emergency dispatch</h1>
+          <img
+            src={heroWide}
+            srcSet={`${heroNarrow} 768w, ${heroWide} 1536w`}
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            width={1536}
+            height={1024}
+            fetchPriority="high"
+            alt="A relief worker in an orange high-visibility vest hands a bag of food down from a supply truck to a man, with a long queue of waiting families along the flooded street behind him."
+            className="block w-full h-auto"
+          />
         </section>
 
         {/* ── Live crisis strip ──────────────────────────────── */}
@@ -217,7 +202,7 @@ export default function Home() {
             <span className="block truncate text-sm text-[#111827]">
               Southwestern basin overflowing
               {!loading && !offline && stats.districts > 0 && (
-                <> • {stats.districts} district{stats.districts === 1 ? '' : 's'} reporting</>
+                <> • {stats.districts} district{stats.districts === 1 ? '' : 's'} critically impacted</>
               )}
             </span>
           </span>
@@ -286,7 +271,7 @@ export default function Home() {
             <h2 id="aid-heading" className="font-serif text-lg font-bold text-[#111827]">
               Immediate Aid Requests
             </h2>
-            <span className="text-[11px] text-[#6B7280]">Select a type to flag a need</span>
+            <span className="text-[11px] text-[#6B7280]">Select type to flag need</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
@@ -319,13 +304,13 @@ export default function Home() {
                 Our Commitment
               </div>
               <h2 id="about-heading" className="font-serif text-lg font-bold text-[#111827]">
-                About HelpSriLanka
+                About Help SriLanka
               </h2>
             </div>
           </div>
 
           <p className="mt-3 text-sm leading-relaxed text-[#374151]">
-            HelpSriLanka was founded during catastrophic monsoon flash floods to close the
+            Help SriLanka was founded during catastrophic monsoon flash floods to close the
             fatal gap between ground realities and disaster logistics. We unite local
             volunteer flotillas, religious charity centres, international diaspora donors,
             and tri-forces rescue command through one open, tamper-evident digital dispatch
@@ -351,7 +336,7 @@ export default function Home() {
             <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
               Emergency Disaster Hotlines
             </div>
-            <div className="mt-2 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div className="mt-2 grid grid-cols-2 gap-2.5">
               {HOTLINE_CARDS.map(({ label, number, accent }) => (
                 <a
                   key={number}
@@ -360,6 +345,18 @@ export default function Home() {
                 >
                   <div className="text-[11px] text-[#6B7280]">{label}</div>
                   <div className={`font-serif text-xl font-bold ${accent}`}>{number}</div>
+                </a>
+              ))}
+            </div>
+
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {HOTLINE_CHIPS.map(({ label, number }) => (
+                <a
+                  key={number}
+                  href={`tel:${number}`}
+                  className="rounded-full bg-white px-3 py-1.5 text-xs text-[#374151] transition-colors hover:text-[#B91C1C]"
+                >
+                  {label} <span className="font-bold text-[#111827]">{number}</span>
                 </a>
               ))}
             </div>
@@ -375,7 +372,7 @@ export default function Home() {
         </div>
 
         <p className="pb-2 text-center text-[11px] text-[#9CA3AF]">
-          Built with Sri Lankan civic volunteers · Open Humanitarian Collective
+          Built with Sri Lankan civic volunteers · Open Humanitarian Collective · 2024
         </p>
       </div>
 
