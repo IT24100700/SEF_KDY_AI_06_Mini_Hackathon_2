@@ -2,7 +2,7 @@
 
 **Help Sri Lanka** is a rapid-response disaster relief web application connecting affected communities with relief donors across Sri Lanka during flood, landslide, and monsoon emergencies.
 
-[Deployed on Netlify]([https://vercel.com](https://app.netlify.com)
+[Deployed on Netlify](https://app.netlify.com)
 [Database](https://supabase.com)
 [React](https://reactjs.org/)
 [Tailwind CSS](https://tailwindcss.com/)
