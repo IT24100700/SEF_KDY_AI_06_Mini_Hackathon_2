@@ -58,9 +58,6 @@ const COMMITMENTS = [
   },
 ]
 
-// 117 and 1919 lead, per the design. The other three official lines stay
-// on the same row rather than being dropped — never hide a working
-// emergency number to save space.
 const HOTLINE_CARDS = [
   { label: 'Disaster Mgt Centre', number: '117', accent: 'text-[#B91C1C]', lead: true },
   { label: 'Gov Emergency Ops', number: '1919', accent: 'text-[#111827]', lead: true },
@@ -94,21 +91,15 @@ function StatValue({ loading, offline, value, suffix }) {
   if (loading) {
     return <span className="inline-block h-6 w-24 rounded bg-slate-200 animate-pulse align-middle" />
   }
-  // Never present a stale/absent feed as a real count of zero.
   return <>{offline ? '—' : value.toLocaleString()} {suffix}</>
 }
 
 /* ────────────────────────────────────────────────────────────────
-   Live figures
+   Live figures hook
    ──────────────────────────────────────────────────────────────── */
 
 const EMPTY_STATS = { pledges: 0, pending: 0, districts: 0 }
 
-/**
- * Pulls a single snapshot of the shared `items` table and derives the
- * headline figures. Returns `offline: true` when Supabase is unreachable
- * or unconfigured so the landing page still renders for everyone.
- */
 function useReliefStats() {
   const [stats, setStats] = useState(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
@@ -145,7 +136,6 @@ function useReliefStats() {
     }
 
     load()
-    // Refresh while a coordinator leaves the dashboard open.
     const timer = setInterval(load, 30_000)
     return () => {
       cancelled = true
@@ -157,20 +147,18 @@ function useReliefStats() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   Page
+   Page Component
    ──────────────────────────────────────────────────────────────── */
 
 export default function Home() {
   const { stats, loading, offline } = useReliefStats()
 
   return (
-    <div className="bg-[#F4F4F5]">
+    <div className="bg-[#F4F4F5] min-h-screen">
       <div className="mx-auto w-full max-w-[1600px] space-y-3 px-3 py-3 sm:space-y-4 sm:px-5 sm:py-5 lg:px-8">
 
         {/* ── Hero ───────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-[#1C1917]">
-          {/* The HELP SRI LANKA wordmark is burnt into the artwork, so the
-              accessible heading is provided separately for screen readers. */}
           <h1 className="sr-only">Help Sri Lanka — flood and disaster emergency dispatch</h1>
           <img
             src={heroWide}
@@ -352,57 +340,16 @@ export default function Home() {
         </section>
 
         {/* ── Closing links ──────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-1 text-xs text-[#6B7280]">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-4 text-xs text-[#6B7280]">
           <Link to="/requests" className="hover:text-[#B91C1C]">Aid Requests Board</Link>
           <Link to="/donations" className="hover:text-[#B91C1C]">Donations Board</Link>
           <Link to="/about" className="hover:text-[#B91C1C]">Guidelines</Link>
           <Link to="/feedback" className="hover:text-[#B91C1C]">Share Feedback</Link>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      {/* Hero */}
-      <div className="text-center mb-16">
-        <span className="inline-block bg-red-100 text-red-700 text-sm font-semibold px-4 py-1 rounded-full mb-4">
-          Flood &amp; Disaster Emergency Dispatch Platform
-        </span>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
-          Help Sri Lanka <span className="text-red-500">Recover</span>
-        </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-8">
-          A real-time disaster relief coordination platform connecting those who need
-          aid with those who can provide it — built for speed in times of crisis.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            to="/request-aid"
-            className="bg-red-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-red-700 transition-colors shadow"
-          >
-            Request Aid
-          </Link>
-          <Link
-            to="/donate"
-            className="bg-slate-900 text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-700 transition-colors shadow"
-          >
-            Donate / Volunteer
-          </Link>
         </div>
 
-        <p className="pb-2 text-center text-[11px] text-[#9CA3AF]">
-          Built with Sri Lankan civic volunteers · Open Humanitarian Collective · 2024
+        <p className="pb-6 text-center text-[11px] text-[#9CA3AF]">
+          Built with Sri Lankan civic volunteers · Open Humanitarian Collective · 2026
         </p>
-      {/* Quick stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {[
-          { label: 'Aid Requests', value: '—' },
-          { label: 'Donations Pledged', value: '—' },
-          { label: 'Volunteers Active', value: '—' },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-sm"
-          >
-            <div className="text-3xl font-bold text-slate-900 mb-1">{value}</div>
-            <div className="text-sm font-medium text-slate-500">{label}</div>
-          </div>
-        ))}
       </div>
 
       <MobileTabBar />
