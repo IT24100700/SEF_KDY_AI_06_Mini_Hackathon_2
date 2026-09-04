@@ -27,9 +27,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🇱🇰</span>
             <span className="font-bold text-slate-900 text-lg leading-tight">
-              Help<span className="text-red-500">SriLanka</span>
+              Help<span className="text-red-600">SriLanka</span>
             </span>
           </Link>
 
@@ -46,9 +45,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <a
               href="tel:117"
-              className="flex items-center gap-1.5 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-red-700 transition-colors"
+              className="flex items-center gap-1.5 bg-red-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full hover:bg-red-700 transition-colors"
             >
-              🚨 117 — Disaster Hotline
+              117 — Disaster Hotline
             </a>
             <Link
               to="/login"
@@ -110,7 +109,7 @@ export default function Navbar() {
               href="tel:117"
               className="flex items-center justify-center gap-2 bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-lg"
             >
-              🚨 Emergency: 117 — Disaster Management
+              Emergency Hotline: 117 — Disaster Management
             </a>
             <div className="flex gap-2">
               <Link
