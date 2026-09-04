@@ -1,0 +1,14 @@
+{
+  "name": "help-srilanka",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo root. Exists so Railway (and any other Nixpacks/Heroku-style host) can detect and boot the Express API in backend/ without needing a Root Directory set in the dashboard. The React app in frontend/ is built by Netlify via netlify.toml and is not affected by this file.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "postinstall": "npm install --prefix backend",
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix backend"
+  }
+}
