@@ -353,7 +353,7 @@ export default function Feedback() {
 
   return (
     <div className="min-h-full bg-[#F4F4F5]">
-      <div className="mx-auto max-w-5xl px-3 py-5 sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-[1600px] px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
 
         {/* ── Header ─────────────────────────────────────────── */}
         <header className="mb-5">
@@ -386,10 +386,10 @@ export default function Feedback() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
 
           {/* ── Form ─────────────────────────────────────────── */}
-          <section className="lg:col-span-3">
+          <section className="lg:col-span-7 xl:col-span-6">
             {receipt ? (
               <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center">
                 <div
@@ -536,7 +536,7 @@ export default function Feedback() {
           </section>
 
           {/* ── Board ────────────────────────────────────────── */}
-          <section className="lg:col-span-2" aria-labelledby="board-heading">
+          <section className="lg:col-span-5 xl:col-span-6" aria-labelledby="board-heading">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 id="board-heading" className="font-serif text-lg font-bold text-[#111827]">
                 Recent Feedback
@@ -561,7 +561,7 @@ export default function Feedback() {
             )}
 
             {loadingFeed ? (
-              <ul className="space-y-2.5">
+              <ul className="grid grid-cols-1 gap-2.5 xl:grid-cols-2">
                 {[0, 1, 2].map((i) => (
                   <li key={i} className="h-28 animate-pulse rounded-xl border border-[#E5E7EB] bg-white" />
                 ))}
@@ -575,7 +575,7 @@ export default function Feedback() {
                 </p>
               </div>
             ) : (
-              <ul className="space-y-2.5">
+              <ul className="grid grid-cols-1 gap-2.5 xl:grid-cols-2">
                 {visible.map((entry, index) => (
                   <EntryCard
                     key={entry.id ?? entry.ref ?? index}
