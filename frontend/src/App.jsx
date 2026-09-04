@@ -29,7 +29,7 @@ export default function App() {
           </Routes>
         </main>
         <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-          © {new Date().getFullYear()} HelpSriLanka — Built with ❤️ during the SEF Mini Hackathon
+          © {new Date().getFullYear()} HelpSriLanka — Built for Sri Lanka during the SEF Mini Hackathon
         </footer>
       </div>
     </BrowserRouter>
