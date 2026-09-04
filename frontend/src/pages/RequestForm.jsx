@@ -1,6 +1,17 @@
 import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
+
+// The three severity radio values map onto the urgency labels the
+// dispatch board filters and colour-codes by.
+const URGENCY_BY_SEVERITY = {
+  sos:      'SOS Urgent',
+  urgent:   'High Alert',
+  standard: 'Moderate',
+}
 
 // ─── Design-system colours (from Stitch Humanitarian Crisis Response) ─────────
 // Primary:  #af101a  |  primary-container: #d32f2f  |  on-primary: #fff
@@ -142,6 +153,9 @@ export default function RequestForm() {
   const [gpsLocked, setGpsLocked] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  // Previously a failed submit only logged to the console, so a victim
+  // filing a request saw the button stop spinning and nothing else.
+  const [submitError, setSubmitError] = useState('')
   const [token] = useState(`LK-${Math.floor(1000 + Math.random() * 9000)}`)
 
   // Category switch
@@ -181,6 +195,7 @@ export default function RequestForm() {
   // Submit
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitError('')
     const allForm = {
       ...form,
       adults: counts.adults,
@@ -201,20 +216,44 @@ export default function RequestForm() {
       .map((c) => c.text)
       .join(', ')
 
-    const { error } = await supabase.from('items').insert([
-      {
-        type: 'request',
-        name: form.name,
-        contact: form.phone,
-        location: `${form.district} — ${form.landmark}`,
-        category,
-        description: `[${severity.toUpperCase()}] Shelter: ${form.shelter}. Affected: ${counts.adults} adults, ${counts.children} children, ${counts.elders} elders. Supplies: ${selectedSupplies}. Notes: ${form.notes}`,
-      },
-    ])
+    try {
+      const res = await fetch(`${API_ROOT}/api/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'request',
+          name: form.name,
+          contact: form.phone,
+          location: `${form.district} — ${form.landmark}`,
+          category,
+          description: `[${severity.toUpperCase()}] Shelter: ${form.shelter}. Affected: ${counts.adults} adults, ${counts.children} children, ${counts.elders} elders. Supplies: ${selectedSupplies}. Notes: ${form.notes}`,
+          // The dispatch board renders these when present, and they are
+          // already on the form — no reason to make it guess from the
+          // description string.
+          district: form.district,
+          landmark: form.landmark,
+          shelter_name: form.shelter,
+          contact_name: form.name,
+          contact_phone: form.phone,
+          quantity_or_people: counts.adults + counts.children + counts.elders,
+          supplies_needed: selectedSupplies,
+          urgency: URGENCY_BY_SEVERITY[severity] ?? 'High Alert',
+          notes: form.notes,
+        }),
+      })
 
-    setLoading(false)
-    if (!error) setSubmitted(true)
-    else console.error('[RequestForm] Supabase error:', error)
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error || `Server error: ${res.status}`)
+      }
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error('[RequestForm] submit failed:', err)
+      setSubmitError(err.message || 'Could not file the request. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Input field helper
@@ -678,6 +717,15 @@ export default function RequestForm() {
 
         {/* ── CTA + Hotlines ────────────────────────────────────────── */}
         <div className="flex flex-col gap-3">
+          {submitError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-xl border border-[#93000a]/30 bg-[#ffdad6] px-4 py-3 text-sm text-[#93000a]"
+            >
+              <span aria-hidden="true">⚠️</span>
+              <span>{submitError}</span>
+            </div>
+          )}
           <button
             type="button"
             onClick={handleSubmit}

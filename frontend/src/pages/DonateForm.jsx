@@ -6,15 +6,20 @@
  *   - Two-category item quantity builder (Water/Rations + Medical/Hygiene)
  *   - Donor information & logistics form
  *   - Full validation (name, +94 phone, email, min 1 item)
- *   - POST to http://localhost:5000/api/donations via fetch
+ *   - POST to {VITE_API_URL}/api/donations via fetch
  *   - Loading state, inline toast errors, success banner
  *
  * Route: /donate  (wired in App.jsx → DonateForm)
  * Author: Help Sri Lanka Hackathon Team
  */
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+
+// ─── API ─────────────────────────────────────────────────────────────────────
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
 
 // ─── Brand constants ─────────────────────────────────────────────────────────
 const RED      = '#A50116'
@@ -76,13 +81,50 @@ const DROP_OFF_LOCATIONS = [
 ]
 
 // ─── Impact stats ─────────────────────────────────────────────────────────────
-const IMPACT_STATS = [
-  { value: '128 Tons', label: 'Supplies Moved'  },
-  { value: '34,200',   label: 'Food Kits Given' },
-  { value: '12',       label: 'Rescue Boats'    },
-  { value: '8,400',    label: 'Medical Packs'   },
-  { value: '6',        label: 'Relief Camps'    },
+// These five figures used to be hardcoded ("128 Tons", "34,200 Food Kits"
+// and so on). Invented numbers on a relief platform are worse than no
+// numbers, so they now come from GET /api/stats. Until that responds they
+// render as an em dash rather than as a plausible-looking placeholder.
+const EMPTY_IMPACT = [
+  { key: 'units',      value: '—', label: 'Units Pledged'    },
+  { key: 'shipments',  value: '—', label: 'Consignments'     },
+  { key: 'delivered',  value: '—', label: 'Delivered'        },
+  { key: 'requests',   value: '—', label: 'Open Requests'    },
+  { key: 'districts',  value: '—', label: 'Districts Covered'},
 ]
+
+function useImpactStats() {
+  const [impact, setImpact] = useState(EMPTY_IMPACT)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch(`${API_ROOT}/api/stats`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        if (cancelled) return
+        const n = (value) => Number(value ?? 0).toLocaleString('en-LK')
+        setImpact([
+          { key: 'units',     value: n(data.donations?.totalUnits), label: 'Units Pledged'     },
+          { key: 'shipments', value: n(data.donations?.total),      label: 'Consignments'      },
+          { key: 'delivered', value: n(data.donations?.delivered),  label: 'Delivered'         },
+          { key: 'requests',  value: n(data.pending),               label: 'Open Requests'     },
+          { key: 'districts', value: n(data.districts),             label: 'Districts Covered' },
+        ])
+      })
+      .catch(() => {
+        // Leave the em dashes in place — an unreachable API must not turn
+        // into confident-looking zeroes.
+      })
+
+    return () => { cancelled = true }
+  }, [])
+
+  return impact
+}
 
 // ─── Thumbnail images (Unsplash relief-themed, no auth required) ──────────────
 const THUMBNAILS = [
@@ -311,6 +353,7 @@ function SuccessBanner({ name, onReset }) {
 // ─── Main page component ──────────────────────────────────────────────────────
 export default function DonateForm() {
   const navigate = useNavigate()
+  const impact = useImpactStats()
 
   // ── Quantity state ──────────────────────────────────────────────────────────
   const [qty, setQty] = useState(INITIAL_QTY)
@@ -387,7 +430,7 @@ export default function DonateForm() {
 
     setLoading(true)
     try {
-      const res = await fetch('http://localhost:5000/api/donations', {
+      const res = await fetch(`${API_ROOT}/api/donations`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload),
@@ -463,9 +506,9 @@ export default function DonateForm() {
 
           {/* Impact stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {IMPACT_STATS.map(({ value, label }) => (
+            {impact.map(({ key, value, label }) => (
               <div
-                key={label}
+                key={key}
                 className="bg-white/15 backdrop-blur border border-white/20 rounded-xl px-4 py-3 text-center"
               >
                 <div className="text-xl font-extrabold text-white leading-none">{value}</div>

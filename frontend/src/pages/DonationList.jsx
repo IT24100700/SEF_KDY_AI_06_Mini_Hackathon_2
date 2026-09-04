@@ -13,7 +13,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:5000/api/donations'
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
+const API_BASE = `${API_ROOT}/api/donations`
 
 const STATUS_CFG = {
   Pending:    { label: 'Pending',    bg: 'bg-amber-100',  text: 'text-amber-700',  dot: 'bg-amber-400'  },

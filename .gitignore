@@ -12,3 +12,11 @@ build/
 Thumbs.db
 .vscode/
 *.log
+
+# ─── Local environment / secrets ────────────────────────────────
+# These hold Supabase credentials and the database password. Copy
+# backend/.env.example and frontend/.env.example instead, and share the
+# real values out of band — never through the repository.
+.env
+.env.*
+!.env.example

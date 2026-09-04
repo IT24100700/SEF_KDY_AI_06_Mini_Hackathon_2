@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
 
 // Clean inline SVG Icons (no external icon dependencies needed)
 const SearchIcon = ({ className = "w-5 h-5" }) => (
@@ -82,115 +85,6 @@ const ShieldCheckIcon = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-// Initial curated disaster field data reflecting actual flood hotspots
-const SEED_REQUESTS = [
-  {
-    id: 'REQ-LK-9041',
-    token: 'RAT-04B-2026',
-    title: 'Ratnapura (Kalu Ganga Sector 04-B)',
-    district: 'Ratnapura',
-    ds_division: 'Ratnapura',
-    shelter_name: 'Bodhiraja Cultural Hall (Highland Camp)',
-    landmark: 'Near Clock Tower Junction / Kalu Ganga Bridge',
-    contact_name: 'Ruwan Perera',
-    contact_phone: '+94 77 123 4567',
-    quantity_or_people: 180,
-    supplies_needed: '500L bottled water, Infant milk powder, Ready-to-eat rations, First aid kits, Candles',
-    urgency: 'SOS Urgent',
-    category: 'Water & Rations',
-    dispatch_tag: 'Navy Unit 04 Assigned',
-    status: 'Pending',
-    notes: 'Family of 5 trapped on upper floor, floodwater reaching 4ft. Needs clean drinking water and infant milk urgently.',
-    created_at: '2026-09-04T09:30:00Z',
-    relative_time: '12 mins ago',
-    initials: 'RP'
-  },
-  {
-    id: 'REQ-LK-9042',
-    token: 'KAL-02K-2026',
-    title: 'Bulathsinhala, Kalutara',
-    district: 'Kalutara',
-    ds_division: 'Bulathsinhala',
-    shelter_name: 'Bulathsinhala Central College',
-    landmark: 'Opposite Sub Post Office',
-    contact_name: 'Malini Kulatunga',
-    contact_phone: '+94 71 987 6543',
-    quantity_or_people: 72,
-    supplies_needed: 'Diabetic insulin cold storage, 10x 5L water containers, Adult blankets, Dhal, Rice packs',
-    urgency: 'High Alert',
-    category: 'Medical Evac',
-    dispatch_tag: 'Sector K-2 Priority',
-    status: 'Pending',
-    notes: 'Diabetic insulin emergency for 72yo elder + 10x 5L water bottles needed before dusk road blockage.',
-    created_at: '2026-09-04T09:10:00Z',
-    relative_time: '35 mins ago',
-    initials: 'MK'
-  },
-  {
-    id: 'REQ-LK-9043',
-    token: 'GAL-08N-2026',
-    title: 'Galle, Nilwala Basin',
-    district: 'Galle',
-    ds_division: 'Baddegama',
-    shelter_name: 'Baddegama Temple Relief Center',
-    landmark: 'Nilwala River Embankment Rd',
-    contact_name: 'Rev. Wimalasiri Thero',
-    contact_phone: '+94 76 555 4321',
-    quantity_or_people: 120,
-    supplies_needed: 'Dry rations pack for 8 families in temporary shelter. Rice, lentils, dhal, biscuits, mosquito coils, matches.',
-    urgency: 'Moderate',
-    category: 'Water & Rations',
-    dispatch_tag: 'Community Relief Camp',
-    status: 'Pending',
-    notes: 'Dry rations pack for 8 families in temporary school shelter. Rice, lentils, dhal, biscuits, candles.',
-    created_at: '2026-09-04T08:00:00Z',
-    relative_time: '1 hr ago',
-    initials: 'RW'
-  },
-  {
-    id: 'REQ-LK-9044',
-    token: 'ELA-01S-2026',
-    title: 'Elapatha Sector 01',
-    district: 'Ratnapura',
-    ds_division: 'Elapatha',
-    shelter_name: 'Elapatha Rural Hospital Compound',
-    landmark: 'Bridge approach road',
-    contact_name: 'Sunil Dharmadasa',
-    contact_phone: '+94 72 333 4455',
-    quantity_or_people: 4,
-    supplies_needed: 'Evacuated 4 stranded elders by volunteer boat crew. Safely delivered to highland district hospital.',
-    urgency: 'High Alert',
-    category: 'Rescue Boats',
-    dispatch_tag: 'Sabaragamuwa Volunteer Flotilla',
-    status: 'Done',
-    notes: 'Evacuated 4 stranded elders by volunteer boat crew. Safely delivered to highland district hospital.',
-    created_at: '2026-09-04T07:15:00Z',
-    relative_time: '2 hrs ago',
-    initials: 'SD'
-  },
-  {
-    id: 'REQ-LK-9045',
-    token: 'COL-07K-2026',
-    title: 'Kolonnawa, Kelani River Basin',
-    district: 'Colombo',
-    ds_division: 'Kolonnawa',
-    shelter_name: 'Kolonnawa Terrence Silva Vidyalaya',
-    landmark: 'Near Meethotamulla main access',
-    contact_name: 'Kithsiri Bandara',
-    contact_phone: '+94 75 444 8899',
-    quantity_or_people: 95,
-    supplies_needed: 'Cooked meal packets (Lunch/Dinner), Baby formula, Diapers, Sanitary packs, Clean water tankers',
-    urgency: 'SOS Urgent',
-    category: 'Water & Rations',
-    dispatch_tag: 'Army Disaster Response #12',
-    status: 'Done',
-    notes: 'Ground floor submerged. 95 persons in school 2nd floor. Meals delivered by Tri-forces relief truck.',
-    created_at: '2026-09-04T06:30:00Z',
-    relative_time: '3 hrs ago',
-    initials: 'KB'
-  }
-];
-
 export default function RequestList() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -210,54 +104,21 @@ export default function RequestList() {
 
   const fetchRequests = async () => {
     setLoading(true);
-    let list = [...SEED_REQUESTS];
+    // Starts empty: every record on this board comes from the database.
+    // The demonstration records that used to be seeded here have been
+    // removed, so an empty board now honestly means an empty table.
+    let list = [];
 
-    // Load user submissions from localStorage
+    // Fetch the live dispatch queue. On failure the board renders empty
+    // rather than inventing records — a relief coordinator has to be able
+    // to trust that what is on screen is what is in the queue.
     try {
-      const stored = localStorage.getItem('local_items');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          const localRequests = parsed
-            .filter(item => (item.type || '').toUpperCase() === 'REQUEST' || (item.type || '').toLowerCase() === 'request')
-            .map(item => ({
-              id: item.id || `LOCAL-${Date.now()}`,
-              token: item.token || `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
-              title: item.title || item.name || `${item.district || 'Western'} Aid Station`,
-              district: item.district || 'Colombo',
-              ds_division: item.ds_division || item.divisional_secretariat || item.district || '',
-              shelter_name: item.shelter_name || item.camp_name || 'Field Rescue Station',
-              landmark: item.landmark || item.location || '',
-              contact_name: item.contact_name || item.name || 'Field Coordinator',
-              contact_phone: item.contact_phone || item.contact || '+94 77 000 0000',
-              quantity_or_people: item.quantity_or_people || item.affected_count || item.people_count || 10,
-              supplies_needed: item.supplies_needed || item.description || item.specific_supplies || 'Emergency drinking water and food rations',
-              urgency: item.urgency === 'Critical' || item.urgency === 'SOS' || item.urgency === 'Urgent' ? 'SOS Urgent' : (item.urgency || 'High Alert'),
-              category: item.category || 'Water & Rations',
-              dispatch_tag: item.dispatch_tag || 'Pending Dispatch',
-              status: item.status === 'Fulfilled' || item.status === 'Done' ? 'Done' : 'Pending',
-              notes: item.notes || item.description || '',
-              created_at: item.created_at || new Date().toISOString(),
-              relative_time: 'Just now',
-              initials: (item.name || item.contact_name || 'AR').slice(0, 2).toUpperCase()
-            }));
-          list = [...localRequests, ...list];
-        }
-      }
-    } catch (err) {
-      console.warn('Error parsing local requests:', err);
-    }
+      const res = await fetch(`${API_ROOT}/api/items?type=request`);
 
-    // Try fetching from Supabase items table
-    try {
-      if (supabase) {
-        const { data, error } = await supabase
-          .from('items')
-          .select('*')
-          .or('type.eq.request,type.eq.REQUEST')
-          .order('created_at', { ascending: false });
+      if (res.ok) {
+        const { items: data } = await res.json();
 
-        if (!error && data && data.length > 0) {
+        if (data && data.length > 0) {
           const remoteRequests = data.map(item => ({
             id: item.id,
             token: item.token || `DB-${item.id}`,
@@ -282,8 +143,8 @@ export default function RequestList() {
           list = [...remoteRequests, ...list];
         }
       }
-    } catch (e) {
-      console.warn('Supabase fetch bypassed, using local & seed records.');
+    } catch (err) {
+      console.warn('[RequestList] could not reach the API:', err);
     }
 
     // Deduplicate items
