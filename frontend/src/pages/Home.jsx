@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getSupabase } from '../components/safeSupabase'
+import { getSupabase, describeSupabaseError, NOT_CONFIGURED } from '../components/safeSupabase'
 import MobileTabBar from '../components/MobileTabBar'
 import heroWide from '../assets/hero-help-srilanka.jpg'
 import heroNarrow from '../assets/hero-help-srilanka-768.jpg'
@@ -113,6 +113,7 @@ function useReliefStats() {
   const [stats, setStats] = useState(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
+  const [diagnosis, setDiagnosis] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -120,7 +121,7 @@ function useReliefStats() {
     async function load() {
       try {
         const supabase = await getSupabase()
-        if (!supabase) throw new Error('Supabase is not configured')
+        if (!supabase) throw new Error(NOT_CONFIGURED)
 
         const { data, error } = await supabase.from('items').select('type, location')
         if (error) throw error
@@ -137,8 +138,12 @@ function useReliefStats() {
           ).size,
         })
         setOffline(false)
-      } catch {
-        if (!cancelled) setOffline(true)
+        setDiagnosis(null)
+      } catch (err) {
+        if (!cancelled) {
+          setOffline(true)
+          setDiagnosis(describeSupabaseError(err, 'items'))
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -153,7 +158,7 @@ function useReliefStats() {
     }
   }, [])
 
-  return { stats, loading, offline }
+  return { stats, loading, offline, diagnosis }
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -161,7 +166,7 @@ function useReliefStats() {
    ──────────────────────────────────────────────────────────────── */
 
 export default function Home() {
-  const { stats, loading, offline } = useReliefStats()
+  const { stats, loading, offline, diagnosis } = useReliefStats()
 
   return (
     <div className="bg-[#F4F4F5]">
@@ -227,9 +232,17 @@ export default function Home() {
         </section>
 
         {offline && (
-          <p className="text-center text-[11px] text-[#6B7280]">
-            Live figures are temporarily unavailable — emergency actions below still work.
-          </p>
+          <div className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-2.5 text-center">
+            <p className="text-[11px] text-[#6B7280]">
+              Live figures unavailable — every emergency action below still works.
+            </p>
+            {diagnosis && (
+              <p className="mt-0.5 text-[11px] text-[#9CA3AF]">
+                <span className="font-medium text-[#6B7280]">{diagnosis.summary}</span>
+                {diagnosis.fix && <> {diagnosis.fix}</>}
+              </p>
+            )}
+          </div>
         )}
 
         {/* ── Primary calls to action ────────────────────────── */}
