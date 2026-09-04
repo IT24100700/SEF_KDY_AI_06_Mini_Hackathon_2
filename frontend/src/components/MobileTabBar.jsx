@@ -15,7 +15,7 @@ const TABS = [
   { to: '/request-aid', label: 'Request', icon: 'M12 3v9m0 0 3.5-3.5M12 12 8.5 8.5M4 15v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3' },
   { to: '/requests', label: 'Crises', icon: 'M12 4 2.5 20h19L12 4Zm0 6v4.5m0 3h.01' },
   { to: '/donate', label: 'Donate', icon: 'M12 20.25S3.75 15.5 3.75 9.75A4.25 4.25 0 0 1 12 8a4.25 4.25 0 0 1 8.25 1.75c0 5.75-8.25 10.5-8.25 10.5Z' },
-  { to: '/feedback', label: 'Feedback', icon: 'M12 21a9 9 0 1 0-9-9c0 1.6.42 3.1 1.15 4.4L3 21l4.6-1.15A8.95 8.95 0 0 0 12 21Z' },
+  { to: '/about', label: 'About', icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13h.01M11 12h1v4h1' },
 ]
 
 export default function MobileTabBar() {
