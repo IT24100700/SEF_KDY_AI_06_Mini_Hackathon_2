@@ -58,17 +58,15 @@ const COMMITMENTS = [
   },
 ]
 
+// 117 and 1919 lead, per the design. The other three official lines stay
+// on the same row rather than being dropped — never hide a working
+// emergency number to save space.
 const HOTLINE_CARDS = [
-  { label: 'Disaster Mgt Centre', number: '117', accent: 'text-[#B91C1C]' },
-  { label: 'Gov Emergency Ops', number: '1919', accent: 'text-[#111827]' },
-]
-
-// Kept alongside the two headline numbers — never drop a working
-// emergency line just because the mockup only had room for two.
-const HOTLINE_CHIPS = [
-  { label: 'Police', number: '119' },
-  { label: 'Fire & Rescue', number: '110' },
-  { label: 'Ambulance', number: '1990' },
+  { label: 'Disaster Mgt Centre', number: '117', accent: 'text-[#B91C1C]', lead: true },
+  { label: 'Gov Emergency Ops', number: '1919', accent: 'text-[#111827]', lead: true },
+  { label: 'Police Emergency', number: '119', accent: 'text-[#111827]' },
+  { label: 'Fire & Rescue', number: '110', accent: 'text-[#111827]' },
+  { label: 'Suwaseriya Ambulance', number: '1990', accent: 'text-[#111827]' },
 ]
 
 /* ────────────────────────────────────────────────────────────────
@@ -167,7 +165,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#F4F4F5]">
-      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-4">
+      <div className="mx-auto w-full max-w-[1600px] space-y-3 px-3 py-3 sm:space-y-4 sm:px-5 sm:py-5 lg:px-8">
 
         {/* ── Hero ───────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-[#1C1917]">
@@ -182,7 +180,7 @@ export default function Home() {
             height={1024}
             fetchPriority="high"
             alt="A relief worker in an orange high-visibility vest hands a bag of food down from a supply truck to a man, with a long queue of waiting families along the flooded street behind him."
-            className="block w-full h-auto"
+            className="block h-auto w-full object-cover object-[50%_15%] sm:max-h-[520px] lg:max-h-[620px]"
           />
         </section>
 
@@ -274,7 +272,7 @@ export default function Home() {
             <span className="text-[11px] text-[#6B7280]">Select type to flag need</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
             {AID_CATEGORIES.map(({ key, title, blurb, tint, icon }) => (
               <Link
                 key={key}
@@ -317,7 +315,7 @@ export default function Home() {
             network.
           </p>
 
-          <ul className="mt-4 space-y-2.5">
+          <ul className="mt-4 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
             {COMMITMENTS.map(({ title, body, icon }) => (
               <li key={title} className="rounded-xl bg-white p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#111827]">
@@ -336,27 +334,17 @@ export default function Home() {
             <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
               Emergency Disaster Hotlines
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-2.5">
-              {HOTLINE_CARDS.map(({ label, number, accent }) => (
+            <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+              {HOTLINE_CARDS.map(({ label, number, accent, lead }) => (
                 <a
                   key={number}
                   href={`tel:${number}`}
-                  className="rounded-lg bg-white px-3 py-3 text-center transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B91C1C]"
+                  className={`rounded-lg bg-white px-3 py-3 text-center transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B91C1C] ${
+                    lead ? 'ring-1 ring-[#FCA5A5]' : ''
+                  }`}
                 >
                   <div className="text-[11px] text-[#6B7280]">{label}</div>
                   <div className={`font-serif text-xl font-bold ${accent}`}>{number}</div>
-                </a>
-              ))}
-            </div>
-
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {HOTLINE_CHIPS.map(({ label, number }) => (
-                <a
-                  key={number}
-                  href={`tel:${number}`}
-                  className="rounded-full bg-white px-3 py-1.5 text-xs text-[#374151] transition-colors hover:text-[#B91C1C]"
-                >
-                  {label} <span className="font-bold text-[#111827]">{number}</span>
                 </a>
               ))}
             </div>
