@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────
+#  Netlify build configuration
+#
+#  This repository is a monorepo: the React app lives in frontend/
+#  and the Express API in backend/. Netlify defaults to building from
+#  the repository root, which has no package.json, so deploys failed
+#  before this file existed.
+#
+#  Settings here override anything configured in the Netlify UI.
+# ─────────────────────────────────────────────────────────────
+
+[build]
+  # Run the build inside frontend/ rather than at the repo root.
+  base    = "frontend"
+  command = "npm run build"
+
+  # Relative to `base`, so this is frontend/dist — where Vite writes.
+  publish = "dist"
+
+[build.environment]
+  # Vite 8 requires Node ^20.19 || >=22.12. Pinned so Netlify does not
+  # silently pick an older default and fail on syntax the build needs.
+  NODE_VERSION = "22"
+
+
+# ─── SPA routing ─────────────────────────────────────────────
+# App.jsx uses BrowserRouter, so /requests, /donate and the rest are
+# client-side routes with no corresponding file on disk. Without this
+# rule Netlify returns its own 404 whenever someone refreshes on one
+# of them or opens a deep link directly.
+#
+# status 200 (a rewrite, not a redirect) keeps the URL in the address
+# bar so React Router can still read it.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+
+# ─── Environment variables ───────────────────────────────────
+# Set these in the Netlify UI (Site configuration → Environment
+# variables), NOT here — this file is committed.
+#
+#   VITE_API_URL  Base URL of the deployed Express API, e.g.
+#                 https://helpsrilanka-api.onrender.com
+#
+# Without it the built site falls back to http://localhost:5000, which
+# only works on a machine running the backend locally. Every page reads
+# the API through that variable, so the deployed site has no data until
+# the backend is hosted somewhere and this points at it.
