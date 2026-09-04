@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getSupabase } from '../components/safeSupabase'
 import MobileTabBar from '../components/MobileTabBar'
 import { DISTRICTS } from '../components/theme'
+
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
 
 /* ────────────────────────────────────────────────────────────────
    Reference data
@@ -251,17 +254,11 @@ export default function Feedback() {
   /* ── Load the published board ────────────────────────────── */
   const loadFeed = useCallback(async () => {
     try {
-      const supabase = await getSupabase()
-      if (!supabase) throw new Error('Supabase is not configured')
+      const res = await fetch(`${API_ROOT}/api/feedback?limit=30`)
+      if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
-      const { data, error } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(30)
-
-      if (error) throw error
-      setEntries(data ?? [])
+      const { feedback } = await res.json()
+      setEntries(feedback ?? [])
       setFeedOffline(false)
     } catch {
       setFeedOffline(true)
@@ -282,9 +279,6 @@ export default function Feedback() {
     const queued = readPending()
     if (queued.length === 0) return
 
-    const supabase = await getSupabase()
-    if (!supabase) return
-
     // Queued entries are already row-shaped; drop the client-only fields.
     const rows = queued.map((entry) => {
       const row = { ...entry }
@@ -293,11 +287,25 @@ export default function Feedback() {
       return row
     })
 
-    const { error } = await supabase.from('feedback').insert(rows)
-    if (error) return
+    // POST takes one entry at a time, so send them individually and keep
+    // whatever fails still queued rather than dropping the whole batch on
+    // a single bad row.
+    const stillQueued = []
+    for (let i = 0; i < rows.length; i += 1) {
+      try {
+        const res = await fetch(`${API_ROOT}/api/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(rows[i]),
+        })
+        if (!res.ok) stillQueued.push(queued[i])
+      } catch {
+        stillQueued.push(queued[i])
+      }
+    }
 
-    writePending([])
-    setPending([])
+    writePending(stillQueued)
+    setPending(stillQueued)
     await loadFeed()
   }, [loadFeed])
 
@@ -317,11 +325,12 @@ export default function Feedback() {
     const ref = `FB-${Date.now().toString(36).toUpperCase().slice(-6)}`
 
     try {
-      const supabase = await getSupabase()
-      if (!supabase) throw new Error('unconfigured')
-
-      const { error } = await supabase.from('feedback').insert([row])
-      if (error) throw error
+      const res = await fetch(`${API_ROOT}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(row),
+      })
+      if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
       setReceipt({ ref, queued: false })
       setForm(BLANK_FORM)

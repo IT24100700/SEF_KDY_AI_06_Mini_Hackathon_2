@@ -4,6 +4,9 @@ require('dotenv').config()
 
 const authRoutes = require('./routes/auth')
 const itemRoutes = require('./routes/items')
+const donationRoutes = require('./routes/donations')
+const feedbackRoutes = require('./routes/feedback')
+const statsRoutes = require('./routes/stats')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -24,6 +27,9 @@ app.get('/api/health', (_req, res) => {
 // ─── Route Mounts ─────────────────────────────────────────────
 app.use('/api/auth', authRoutes)
 app.use('/api/items', itemRoutes)
+app.use('/api/donations', donationRoutes)
+app.use('/api/feedback', feedbackRoutes)
+app.use('/api/stats', statsRoutes)
 
 // ─── 404 Handler ──────────────────────────────────────────────
 app.use((_req, res) => {

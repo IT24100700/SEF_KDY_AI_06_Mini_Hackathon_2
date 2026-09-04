@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getSupabase } from '../components/safeSupabase'
 import MobileTabBar from '../components/MobileTabBar'
 import heroWide from '../assets/hero-help-srilanka.jpg'
 import heroNarrow from '../assets/hero-help-srilanka-768.jpg'
+
+// Set VITE_API_URL in the deployed environment; falls back to the local
+// Express server for development.
+const API_ROOT = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
 
 /* ────────────────────────────────────────────────────────────────
    Static content
@@ -110,22 +113,18 @@ function useReliefStats() {
 
     async function load() {
       try {
-        const supabase = await getSupabase()
-        if (!supabase) throw new Error('Supabase is not configured')
+        // GET /api/stats does the counting in the database rather than
+        // pulling every row into the browser to count it here.
+        const res = await fetch(`${API_ROOT}/api/stats`)
+        if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
-        const { data, error } = await supabase.from('items').select('type, location')
-        if (error) throw error
+        const data = await res.json()
         if (cancelled) return
 
-        const rows = data ?? []
-        const requests = rows.filter((r) => r.type === 'request')
-
         setStats({
-          pledges: rows.filter((r) => r.type === 'donation').length,
-          pending: requests.length,
-          districts: new Set(
-            requests.map((r) => (r.location ?? '').trim().toLowerCase()).filter(Boolean)
-          ).size,
+          pledges: data.pledges ?? 0,
+          pending: data.pending ?? 0,
+          districts: data.districts ?? 0,
         })
         setOffline(false)
       } catch {
