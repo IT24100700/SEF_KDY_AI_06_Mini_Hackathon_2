@@ -9,10 +9,16 @@ const feedbackRoutes = require('./routes/feedback')
 const statsRoutes = require('./routes/stats')
 
 const app = express()
-const PORT = process.env.PORT || 5000
+// Railway injects its own PORT variable. Fallback to 8080 or 5000 if running locally.
+const PORT = process.env.PORT || 8080 
 
 // ─── Middleware ────────────────────────────────────────────────
-app.use(cors())
+// Updated CORS to allow your Netlify frontend to fetch data without being blocked
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  credentials: true
+}))
 app.use(express.json())
 
 // ─── Health Check ─────────────────────────────────────────────
@@ -37,9 +43,10 @@ app.use((_req, res) => {
 })
 
 // ─── Start ────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅ HelpSriLanka API running on http://localhost:${PORT}`)
-  console.log(`   Health: http://localhost:${PORT}/api/health`)
+// CRITICAL FIX: Bound to '0.0.0.0' so Railway can route external internet traffic
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ HelpSriLanka API running on port ${PORT}`)
+  console.log(`   Health: http://0.0.0.0:${PORT}/api/health`)
 })
 
 module.exports = app
